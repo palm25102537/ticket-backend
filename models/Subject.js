@@ -1,6 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
   const Subject = sequelize.define('Subject', {
-    name: { type: DataTypes.STRING, allowNull: false, unique: true }
+    name: { type: DataTypes.STRING, allowNull: false, unique: true },
+    status: {
+      type: DataTypes.ENUM(),
+      values: ['Active', 'Inactive']
+    }
   },
     {
       tableName: 'subjects',

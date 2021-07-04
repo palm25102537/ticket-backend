@@ -6,7 +6,7 @@ async function authen(req, res, next) {
   try {
     let token = null;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.header.authorization.split(' ')[1]
+      token = req.headers.authorization.split(' ')[1]
     }
     const payload = jwt.verify(token, SECRET_KEY)
     const data = await User.findOne({ where: { id: payload.id } })
@@ -17,3 +17,5 @@ async function authen(req, res, next) {
     next(err)
   }
 }
+
+module.exports = authen
