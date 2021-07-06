@@ -9,7 +9,7 @@ const { SECRET_KEY, EXPIRE, SALT_ROUND } = process.env
 async function register(req, res, next) {
   const transaction = await sequelize.transaction()
   try {
-    const { name, username, password, confirmPassword, email, role } = req.body
+    const { name, username, password, confirmPassword, email, role, classId } = req.body
 
     const isEmail = /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/;
     const isPassword = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/;
@@ -33,7 +33,8 @@ async function register(req, res, next) {
       email,
       role,
       status: 'User',
-      accountStatus: 'Active'
+      accountStatus: 'Active',
+      classId: classId || '1'
     }
 
     await User.create(sendData, { transaction })
@@ -91,10 +92,11 @@ async function editAccount(req, res, next) {
     let id = req.user.status === 'SuperAdmin' ? req.query.id : req.user.id
     let newHashPassword;
     console.log(id)
-    const { name, username, oldPassword, newPassword, confirmNewPassword, email, role, status, accountStatus } = req.body
+    const { name, username, oldPassword, newPassword, confirmNewPassword, email, role, status, accountStatus, classId } = req.body
     const userDataBeforeUpdate = await User.findOne({ where: { id } })
 
     if (newPassword) {
+      if (newPassword !== confirmNewPassword) throw new Validate('Password and confirm password must be matched', 400)
       const isOldPasswordCorrect = await bcrypt.compare(oldPassword, userDataBeforeUpdate.password)
       if (!isOldPasswordCorrect) throw new Validate('Please check old password', 400)
       newHashPassword = await bcrypt.hash(newPassword, parseInt(SALT_ROUND))
@@ -108,7 +110,8 @@ async function editAccount(req, res, next) {
       email: email || userDataBeforeUpdate.email,
       role: role || userDataBeforeUpdate.role,
       status: req.user.status === 'SuperAdmin' ? status : userDataBeforeUpdate.status,
-      accountStatus: req.user.status === 'SuperAdmin' ? accountStatus : req.user.status === 'Admin' ? accountStatus : userDataBeforeUpdate.accountStatus
+      accountStatus: req.user.status === 'SuperAdmin' ? accountStatus : req.user.status === 'Admin' ? accountStatus : userDataBeforeUpdate.accountStatus,
+      classId: req.user.role === 'Teacher' ? 13 : classId || userDataBeforeUpdate.classId
     }
 
     await User.update(sendData, { where: { id } })

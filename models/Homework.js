@@ -27,6 +27,13 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'RESTRICT',
       onUpdate: 'RESTRICT'
     })
+    Homework.belongsTo(models.Class, {
+      foreignKey: {
+        name: 'forClassId',
+        allowNull: false
+      }
+    })
+
   }
   return Homework
 }

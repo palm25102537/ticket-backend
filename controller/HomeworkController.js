@@ -7,9 +7,10 @@ async function createHomework(req, res, next) {
   const transaction = await sequelize.transaction()
   try {
     const { id, role } = req.user
-    const { title, description, subjectId } = req.body
+    const { title, description, subjectId, forClassId } = req.body
 
     if (role !== 'Teacher') throw new Validate('Only Teacher can create homework', 400)
+    if (forClassId === '1' || forClassId == 1) throw new Validate('Cannot give homework to teacher', 400)
 
     const subject = await Subject.findOne({ where: { id: subjectId } })
     console.log(subject)
@@ -18,7 +19,8 @@ async function createHomework(req, res, next) {
       description,
       subjectId,
       userId: id,
-      status: 'pending'
+      status: 'pending',
+      forClassId
     }
 
     await Homework.create(sendData, { transaction })
@@ -38,19 +40,22 @@ async function editHomework(req, res, next) {
   try {
     const { role } = req.user
     const { id } = req.params
-    const { title, description, subjectId, status } = req.body
+    const { title, description, subjectId, status, forClassId } = req.body
 
     const homeworkBeforeUpdate = Homework.findOne({ where: { id } })
     if (!homeworkBeforeUpdate) throw new Validate('Cannot found this homework', 400)
-
+    if (forClassId === '1' || forClassId == 1) throw new Validate('Cannot give homework to teacher', 400)
     const sendData = {
       title: role === 'Teacher' ? title : title === undefined || null || "" ? homeworkBeforeUpdate.title : title,
       description: role === 'Teacher' ? description : description === undefined || null || "" ? homeworkBeforeUpdate.description : description,
       subjectId: role === 'Teacher' ? subjectId : subjectId === undefined || null || "" ? homeworkBeforeUpdate.subjectId : subjectId,
-      status: status || homeworkBeforeUpdate.status
+      status: status || homeworkBeforeUpdate.status,
+      forClassId: forClassId || homeworkBeforeUpdate.forClassId
     }
 
+    await Homework.update(sendData, { where: { id } })
 
+    res.status(200).json({ message: 'Updated' })
   } catch (err) {
     next(err)
   }
@@ -73,7 +78,7 @@ async function getHomework(req, res, next) {
     let homework = await Homework.findAll(searchCondition)
     res.status(200).json({ homework })
   } catch (err) {
-
+    next(err)
   }
 }
 

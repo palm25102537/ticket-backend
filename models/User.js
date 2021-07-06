@@ -33,6 +33,12 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'RESTRICT',
         onUpdate: 'RESTRICT',
       })
+    User.belongsTo(models.Class, {
+      foreignKey: {
+        name: 'classId',
+        allowNull: false
+      }
+    })
   }
   return User
 }
