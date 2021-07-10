@@ -124,8 +124,8 @@ async function editAccount(req, res, next) {
 }
 
 function getMe(req, res, next) {
-  const { name, username, role, email, status } = req.user
-  res.status(200).json({ name, username, role, email, status })
+  const { name, username, role, email, status, classId } = req.user
+  res.status(200).json({ name, username, role, email, status, classId })
 }
 
 function getUser() { }
